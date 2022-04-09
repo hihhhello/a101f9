@@ -28,10 +28,12 @@ const Chat = ({ conversation, setActiveChat, currentUserId }) => {
       username: conversation.otherUser.username,
       conversationId: conversation.id,
     });
-    socket.emit('read-conv-messages', {
-      conversationId: conversation.id,
-      userId: currentUserId,
-    });
+    if (conversation.id) {
+      socket.emit('read-conv-messages', {
+        conversationId: conversation.id,
+        userId: currentUserId,
+      });
+    }
   };
 
   return (
