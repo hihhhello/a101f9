@@ -97,36 +97,33 @@ const Home = ({ user, logout }) => {
     [setConversations]
   );
 
-  const addMessageToConversation = useCallback(
-    (data) => {
-      // if sender isn't null, that means the message needs to be put in a brand new convo
-      const { message, sender = null } = data;
-      if (sender !== null) {
-        const newConvo = {
-          id: message.conversationId,
-          otherUser: sender,
-          messages: [message],
-        };
-        newConvo.latestMessageText = message.text;
-        setConversations((prev) => [newConvo, ...prev]);
-        return;
-      }
+  const addMessageToConversation = useCallback((data) => {
+    // if sender isn't null, that means the message needs to be put in a brand new convo
+    const { message, sender = null } = data;
+    if (sender !== null) {
+      const newConvo = {
+        id: message.conversationId,
+        otherUser: sender,
+        messages: [message],
+      };
+      newConvo.latestMessageText = message.text;
+      setConversations((prev) => [newConvo, ...prev]);
+      return;
+    }
 
-      setConversations((prev) => {
-        return prev.map((convo) => {
-          if (convo.id === message.conversationId) {
-            return {
-              ...convo,
-              messages: [...convo.messages, message],
-              latestMessageText: message.text,
-            };
-          }
-          return convo;
-        });
+    setConversations((prev) => {
+      return prev.map((convo) => {
+        if (convo.id === message.conversationId) {
+          return {
+            ...convo,
+            messages: [...convo.messages, message],
+            latestMessageText: message.text,
+          };
+        }
+        return convo;
       });
-    },
-    [setConversations]
-  );
+    });
+  }, []);
 
   const setActiveChat = (username) => {
     setActiveConversation(username);
@@ -160,22 +157,66 @@ const Home = ({ user, logout }) => {
     );
   }, []);
 
+  const retreiveNewMessage = useCallback(
+    (data) => {
+      const { message } = data;
+
+      const isActiveConv =
+        activeConversation &&
+        message.conversationId === activeConversation.conversationId;
+
+      // Reading received message if convId is active
+      if (isActiveConv) {
+        socket.emit('read-conv-messages', {
+          conversationId: activeConversation.conversationId,
+          userId: user.id,
+        });
+      }
+
+      addMessageToConversation(data);
+    },
+    [activeConversation, addMessageToConversation, socket, user]
+  );
+
+  const updateConversationMessages = useCallback(async (data) => {
+    const { conversationId, messages } = data;
+    setConversations((prev) => {
+      return prev.map((conv) => {
+        if (conv.id === conversationId) {
+          return {
+            ...conv,
+            messages,
+          };
+        }
+        return conv;
+      });
+    });
+  }, []);
+
   // Lifecycle
 
   useEffect(() => {
     // Socket init
     socket.on('add-online-user', addOnlineUser);
     socket.on('remove-offline-user', removeOfflineUser);
-    socket.on('new-message', addMessageToConversation);
+    socket.on('new-message', retreiveNewMessage);
+    socket.on('read-conv-messages', updateConversationMessages);
 
     return () => {
       // before the component is destroyed
       // unbind all event handlers used in this component
       socket.off('add-online-user', addOnlineUser);
       socket.off('remove-offline-user', removeOfflineUser);
-      socket.off('new-message', addMessageToConversation);
+      socket.off('new-message', retreiveNewMessage);
+      socket.off('read-conv-messages', updateConversationMessages);
     };
-  }, [addMessageToConversation, addOnlineUser, removeOfflineUser, socket]);
+  }, [
+    addOnlineUser,
+    retreiveNewMessage,
+    removeOfflineUser,
+    socket,
+    updateConversationMessages,
+  ]);
 
   useEffect(() => {
     // when fetching, prevent redirect

@@ -42,6 +42,7 @@ const Sidebar = ({
               conversation={conversation}
               key={conversation.otherUser.username}
               setActiveChat={setActiveChat}
+              currentUserId={user.id}
             />
           );
         })}

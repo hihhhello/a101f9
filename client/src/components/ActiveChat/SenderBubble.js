@@ -21,13 +21,17 @@ const useStyles = makeStyles(() => ({
     padding: 8,
     fontWeight: 'bold',
   },
+  isRead: {
+    fontSize: 14,
+    color: '#000',
+  },
   bubble: {
     background: '#F4F6FA',
     borderRadius: '10px 10px 0 10px',
   },
 }));
 
-const SenderBubble = ({ time, text }) => {
+const SenderBubble = ({ time, text, isRead }) => {
   const classes = useStyles();
 
   return (
@@ -36,6 +40,9 @@ const SenderBubble = ({ time, text }) => {
       <Box className={classes.bubble}>
         <Typography className={classes.text}>{text}</Typography>
       </Box>
+      <Typography className={classes.isRead}>
+        {isRead ? 'Read' : 'Delivered'}
+      </Typography>
     </Box>
   );
 };
