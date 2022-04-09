@@ -76,7 +76,7 @@ io.on('connection', (socket) => {
       order: [['createdAt', 'ASC']],
     });
 
-    socket.broadcast.emit('read-conv-messages', {
+    io.emit('read-conv-messages', {
       conversationId: data.conversationId,
       messages,
     });

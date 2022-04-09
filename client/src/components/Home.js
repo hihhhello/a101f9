@@ -93,6 +93,11 @@ const Home = ({ user, logout }) => {
           return convo;
         });
       });
+
+      setActiveConversation((prev) => ({
+        ...prev,
+        conversationId: message.conversationId,
+      }));
     },
     [setConversations]
   );
@@ -160,25 +165,44 @@ const Home = ({ user, logout }) => {
   const retreiveNewMessage = useCallback(
     (data) => {
       const { message } = data;
-
+      const conv = conversations.find((c) => c.id === message.conversationId);
       const isActiveConv =
+        Boolean(activeConversation) &&
+        Boolean(conv) &&
+        conv.otherUser.username === activeConversation.username;
+
+      if (
         activeConversation &&
-        message.conversationId === activeConversation.conversationId;
+        !activeConversation.conversationId &&
+        activeConversation.username === conv.otherUser.username
+      ) {
+        setActiveConversation((prev) => ({
+          ...prev,
+          conversationId: message.conversationId,
+        }));
+      }
 
       // Reading received message if convId is active
       if (isActiveConv) {
         socket.emit('read-conv-messages', {
           conversationId: activeConversation.conversationId,
           userId: user.id,
+          // otherUser: conv.otherUser,
         });
       }
 
       addMessageToConversation(data);
     },
-    [activeConversation, addMessageToConversation, socket, user]
+    [
+      activeConversation,
+      addMessageToConversation,
+      conversations,
+      socket,
+      user.id,
+    ]
   );
 
-  const updateConversationMessages = useCallback(async (data) => {
+  const updateConversationMessages = useCallback((data) => {
     const { conversationId, messages } = data;
     setConversations((prev) => {
       return prev.map((conv) => {
