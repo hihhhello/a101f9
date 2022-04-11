@@ -114,8 +114,10 @@ const Home = ({ user, logout }) => {
       }
 
       setConversations((prev) => {
-        return prev.map((convo) => {
+        let convInd = null;
+        const newState = prev.map((convo, i) => {
           if (convo.id === message.conversationId) {
+            convInd = i;
             return {
               ...convo,
               messages: [...convo.messages, message],
@@ -124,6 +126,21 @@ const Home = ({ user, logout }) => {
           }
           return convo;
         });
+
+        if (convInd === null) {
+          return newState;
+        }
+
+        if (convInd === 0) {
+          return newState;
+        }
+
+        // Moving conv to top with new message
+        return [
+          newState[convInd],
+          ...newState.slice(0, convInd),
+          ...newState.slice(convInd + 1),
+        ];
       });
     },
     [setConversations]
