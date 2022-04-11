@@ -26,23 +26,24 @@ const Home = ({ user, logout }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   const addSearchedUsers = (users) => {
-    const currentUsers = {};
+    setConversations((prev) => {
+      const currentUsers = {};
 
-    // make table of current users so we can lookup faster
-    conversations.forEach((convo) => {
-      currentUsers[convo.otherUser.id] = true;
+      // make table of current users so we can lookup faster
+      conversations.forEach((convo) => {
+        currentUsers[convo.otherUser.id] = true;
+      });
+      const newState = [...prev];
+
+      users.forEach((user) => {
+        // only create a fake convo if we don't already have a convo with this user
+        if (!currentUsers[user.id]) {
+          let fakeConvo = { otherUser: user, messages: [] };
+          newState.push(fakeConvo);
+        }
+      });
+      return newState;
     });
-
-    const newState = JSON.parse(JSON.stringify(conversations));
-    users.forEach((user) => {
-      // only create a fake convo if we don't already have a convo with this user
-      if (!currentUsers[user.id]) {
-        let fakeConvo = { otherUser: user, messages: [] };
-        newState.push(fakeConvo);
-      }
-    });
-
-    setConversations(newState);
   };
 
   const clearSearchedUsers = () => {
@@ -80,8 +81,10 @@ const Home = ({ user, logout }) => {
   const addNewConvo = useCallback(
     (recipientId, message) => {
       setConversations((prev) => {
-        return prev.map((convo) => {
+        let convInd = null;
+        const newState = prev.map((convo, i) => {
           if (convo.otherUser.id === recipientId) {
+            convInd = i;
             return {
               ...convo,
               messages: [...convo.messages, message],
@@ -92,6 +95,17 @@ const Home = ({ user, logout }) => {
 
           return convo;
         });
+
+        if (convInd === null || convInd === 0) {
+          return newState;
+        }
+
+        // Moving conv to top with new message
+        return [
+          newState[convInd],
+          ...newState.slice(0, convInd),
+          ...newState.slice(convInd + 1),
+        ];
       });
 
       setActiveConversation((prev) => ({
@@ -117,8 +131,10 @@ const Home = ({ user, logout }) => {
     }
 
     setConversations((prev) => {
-      return prev.map((convo) => {
+      let convInd = null;
+      const newState = prev.map((convo, i) => {
         if (convo.id === message.conversationId) {
+          convInd = i;
           return {
             ...convo,
             messages: [...convo.messages, message],
@@ -127,6 +143,16 @@ const Home = ({ user, logout }) => {
         }
         return convo;
       });
+
+      if (convInd === null || convInd === 0) {
+        return newState;
+      }
+      // Moving conv to top with new message
+      return [
+        newState[convInd],
+        ...newState.slice(0, convInd),
+        ...newState.slice(convInd + 1),
+      ];
     });
   }, []);
 
