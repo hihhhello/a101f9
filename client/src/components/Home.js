@@ -33,7 +33,7 @@ const Home = ({ user, logout }) => {
       currentUsers[convo.otherUser.id] = true;
     });
 
-    const newState = JSON.parse(JSON.stringify(conversations));
+    const newState = [...conversations];
     users.forEach((user) => {
       // only create a fake convo if we don't already have a convo with this user
       if (!currentUsers[user.id]) {
