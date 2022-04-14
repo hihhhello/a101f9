@@ -189,25 +189,27 @@ const Home = ({ user, logout }) => {
 
   const retreiveNewMessage = useCallback(
     (data) => {
-      const { message } = data;
-      console.log(message);
-      const conv = conversations.find((c) => c.id === message.conversationId);
-      console.log(conv);
-      if (conv) {
+      const { message, recipientId } = data;
+      if (recipientId === user.id) {
+        const conv = conversations.find((c) => c.id === message.conversationId);
         const isActiveConv =
           Boolean(activeConversation) &&
           Boolean(conv) &&
           conv.otherUser.username === activeConversation.username;
 
-        if (
-          activeConversation &&
-          !activeConversation.conversationId &&
-          activeConversation.username === conv.otherUser.username
-        ) {
-          setActiveConversation((prev) => ({
-            ...prev,
-            conversationId: message.conversationId,
-          }));
+        // If we started a new conversation - we don't have it's ID before we get an answer on our message
+        // Thus we need to check if user (that created conv) is in this conv, so he could immediately read it, by comparing usernames
+        if (conv) {
+          if (
+            activeConversation &&
+            !activeConversation.conversationId &&
+            activeConversation.username === conv.otherUser.username
+          ) {
+            setActiveConversation((prev) => ({
+              ...prev,
+              conversationId: message.conversationId,
+            }));
+          }
         }
 
         // Reading received message if convId is active
@@ -215,7 +217,6 @@ const Home = ({ user, logout }) => {
           socket.emit('read-conv-messages', {
             conversationId: activeConversation.conversationId,
             userId: user.id,
-            // otherUser: conv.otherUser,
           });
         }
 
