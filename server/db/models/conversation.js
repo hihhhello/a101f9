@@ -1,13 +1,8 @@
-const { Op, DATE } = require("sequelize");
+const { Op } = require("sequelize");
 const db = require("../db");
 const Message = require("./message");
 
-const Conversation = db.define("conversation", {
-  lastMessageAt: {
-    type: DATE,
-    defaultValue: null
-  }
-});
+const Conversation = db.define("conversation", {});
 
 // find conversation given two user Ids
 

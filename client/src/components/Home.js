@@ -62,9 +62,10 @@ const Home = ({ user, logout }) => {
     });
   };
 
-  const postMessage = async (body) => {
+  const postMessage = (body) => {
     try {
-      const data = await saveMessage(body);
+      const data = saveMessage(body);
+
       if (!body.conversationId) {
         addNewConvo(body.recipientId, data.message);
       } else {
@@ -79,35 +80,16 @@ const Home = ({ user, logout }) => {
 
   const addNewConvo = useCallback(
     (recipientId, message) => {
-      setConversations((prev) => {
-        let convInd = null;
-        const newState = prev.map((convo, i) => {
-          if (convo.otherUser.id === recipientId) {
-            convInd = i;
-            return {
-              ...convo,
-              messages: [...convo.messages, message],
-              latestMessageText: message.text,
-              id: message.conversationId,
-            };
-          }
-
-          return convo;
-        });
-
-        if (convInd === null || convInd === 0) {
-          return newState;
+      conversations.forEach((convo) => {
+        if (convo.otherUser.id === recipientId) {
+          convo.messages.push(message);
+          convo.latestMessageText = message.text;
+          convo.id = message.conversationId;
         }
-
-        // Moving conv to top with new message
-        return [
-          newState[convInd],
-          ...newState.slice(0, convInd),
-          ...newState.slice(convInd + 1),
-        ];
       });
+      setConversations(conversations);
     },
-    [setConversations]
+    [setConversations, conversations]
   );
 
   const addMessageToConversation = useCallback(
@@ -122,35 +104,17 @@ const Home = ({ user, logout }) => {
         };
         newConvo.latestMessageText = message.text;
         setConversations((prev) => [newConvo, ...prev]);
-        return;
       }
 
-      setConversations((prev) => {
-        let convInd = null;
-        const newState = prev.map((convo, i) => {
-          if (convo.id === message.conversationId) {
-            convInd = i;
-            return {
-              ...convo,
-              messages: [...convo.messages, message],
-              latestMessageText: message.text,
-            };
-          }
-          return convo;
-        });
-
-        if (convInd === null || convInd === 0) {
-          return newState;
+      conversations.forEach((convo) => {
+        if (convo.id === message.conversationId) {
+          convo.messages.push(message);
+          convo.latestMessageText = message.text;
         }
-        // Moving conv to top with new message
-        return [
-          newState[convInd],
-          ...newState.slice(0, convInd),
-          ...newState.slice(convInd + 1),
-        ];
       });
+      setConversations(conversations);
     },
-    [setConversations]
+    [setConversations, conversations]
   );
 
   const setActiveChat = (username) => {
