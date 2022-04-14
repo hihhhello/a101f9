@@ -26,24 +26,23 @@ const Home = ({ user, logout }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   const addSearchedUsers = (users) => {
-    setConversations((prev) => {
-      const currentUsers = {};
+    const currentUsers = {};
 
-      // make table of current users so we can lookup faster
-      conversations.forEach((convo) => {
-        currentUsers[convo.otherUser.id] = true;
-      });
-      const newState = [...prev];
-
-      users.forEach((user) => {
-        // only create a fake convo if we don't already have a convo with this user
-        if (!currentUsers[user.id]) {
-          let fakeConvo = { otherUser: user, messages: [] };
-          newState.push(fakeConvo);
-        }
-      });
-      return newState;
+    // make table of current users so we can lookup faster
+    conversations.forEach((convo) => {
+      currentUsers[convo.otherUser.id] = true;
     });
+
+    const newState = [...conversations];
+    users.forEach((user) => {
+      // only create a fake convo if we don't already have a convo with this user
+      if (!currentUsers[user.id]) {
+        let fakeConvo = { otherUser: user, messages: [] };
+        newState.push(fakeConvo);
+      }
+    });
+
+    setConversations(newState);
   };
 
   const clearSearchedUsers = () => {
