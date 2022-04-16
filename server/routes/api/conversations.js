@@ -79,4 +79,45 @@ router.get("/", async (req, res, next) => {
   }
 });
 
+/**
+ * Reads conversation's messages
+ */
+// userId - by whom messages are read, convId - in which conv read messages
+// setting flag to true where senderId != userId to don't read own messages
+router.patch("/read/:convId", async (req, res, next) => {
+  try {
+    if (!req.user) {
+      return res.sendStatus(401);
+    }
+    const userId = req.user.id;
+    const { convId } = req.params;
+
+    await Message.update(
+      {
+        isRead: true
+      },
+      {
+        where: {
+          isRead: false,
+          conversationId: convId,
+          [Op.not]: {
+            senderId: userId
+          }
+        }
+      }
+    );
+
+    const messages = await Message.findAll({
+      where: {
+        conversationId: convId
+      },
+      order: [["createdAt", "ASC"]]
+    });
+
+    res.json({ messages, convId });
+  } catch (error) {
+    next(error);
+  }
+});
+
 module.exports = router;

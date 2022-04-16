@@ -52,34 +52,11 @@ io.on('connection', (socket) => {
 
   // TODO: Add Redis implementation to manage socket rooms
 
-  // userId - by whom messages are read, convId - in which conv read messages
-  // setting flag to true where senderId != userId to don't read own messages
   socket.on('read-conv-messages', async (data) => {
-    await Message.update(
-      {
-        isRead: true,
-      },
-      {
-        where: {
-          isRead: false,
-          conversationId: data.conversationId,
-          [Op.not]: {
-            senderId: data.userId,
-          },
-        },
-      },
-    );
-
-    const messages = await Message.findAll({
-      where: {
-        conversationId: data.conversationId,
-      },
-      order: [['createdAt', 'ASC']],
-    });
-
-    io.emit('read-conv-messages', {
+    socket.broadcast.emit('read-conv-messages', {
       conversationId: data.conversationId,
-      messages,
+      messages: data.messages,
+      otherUserId: data.otherUserId
     });
   });
 

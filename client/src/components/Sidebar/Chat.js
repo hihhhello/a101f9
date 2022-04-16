@@ -1,8 +1,7 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import { Box, Typography } from '@material-ui/core';
 import { BadgeAvatar, ChatContent } from '../Sidebar';
 import { makeStyles } from '@material-ui/core/styles';
-import { SocketContext } from '../../context/socket';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -39,10 +38,14 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const Chat = ({ conversation, setActiveChat, currentUserId }) => {
+const Chat = ({
+  conversation,
+  setActiveChat,
+  currentUserId,
+  readConversationMessages,
+}) => {
   const classes = useStyles();
   const { otherUser } = conversation;
-  const socket = useContext(SocketContext);
 
   const handleClick = async (conversation) => {
     await setActiveChat({
@@ -51,11 +54,7 @@ const Chat = ({ conversation, setActiveChat, currentUserId }) => {
     });
 
     if (conversation.id) {
-      socket.emit('read-conv-messages', {
-        conversationId: conversation.id,
-        userId: currentUserId,
-        // otherUser: conversation.otherUser,
-      });
+      readConversationMessages(conversation.id, conversation.otherUser.id);
     }
   };
 

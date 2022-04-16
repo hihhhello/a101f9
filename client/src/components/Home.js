@@ -187,8 +187,50 @@ const Home = ({ user, logout }) => {
     );
   }, []);
 
-  const retreiveNewMessage = useCallback(
+  const updateConversationMessages = useCallback(
     (data) => {
+      const { conversationId, messages, otherUserId } = data;
+
+      if (user.id === otherUserId) {
+        setConversations((prev) => {
+          return prev.map((conv) => {
+            if (conv.id === conversationId) {
+              return {
+                ...conv,
+                messages,
+                latestMessageText: messages[messages.length - 1].text,
+              };
+            }
+            return conv;
+          });
+        });
+      }
+    },
+    [user.id]
+  );
+
+  const readConversationMessages = useCallback(
+    async (convId, otherUserId) => {
+      // reading conv and getting updated messages
+      const { data } = await axios.patch(`/api/conversations/read/${convId}`);
+      // updating messages in our conv
+      updateConversationMessages({
+        conversationId: convId,
+        messages: data.messages,
+        otherUserId: user.id,
+      });
+      // updating messages in other user conv
+      socket.emit('read-conv-messages', {
+        conversationId: convId,
+        messages: data.messages,
+        otherUserId: otherUserId,
+      });
+    },
+    [socket, updateConversationMessages, user.id]
+  );
+
+  const retreiveNewMessage = useCallback(
+    async (data) => {
       const { message, recipientId } = data;
       if (recipientId === user.id) {
         const conv = conversations.find((c) => c.id === message.conversationId);
@@ -214,38 +256,20 @@ const Home = ({ user, logout }) => {
 
         // Reading received message if convId is active
         if (isActiveConv) {
-          socket.emit('read-conv-messages', {
-            conversationId: activeConversation.conversationId,
-            userId: user.id,
-          });
+          readConversationMessages(conv.id, conv.otherUser.id);
+        } else {
+          addMessageToConversation(data);
         }
-
-        addMessageToConversation(data);
       }
     },
     [
       activeConversation,
       addMessageToConversation,
       conversations,
-      socket,
+      readConversationMessages,
       user.id,
     ]
   );
-
-  const updateConversationMessages = useCallback((data) => {
-    const { conversationId, messages } = data;
-    setConversations((prev) => {
-      return prev.map((conv) => {
-        if (conv.id === conversationId) {
-          return {
-            ...conv,
-            messages,
-          };
-        }
-        return conv;
-      });
-    });
-  }, []);
 
   // Lifecycle
 
@@ -316,6 +340,7 @@ const Home = ({ user, logout }) => {
           clearSearchedUsers={clearSearchedUsers}
           addSearchedUsers={addSearchedUsers}
           setActiveChat={setActiveChat}
+          readConversationMessages={readConversationMessages}
         />
         <ActiveChat
           activeConversation={activeConversation}
