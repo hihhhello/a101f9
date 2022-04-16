@@ -208,7 +208,6 @@ const Home = ({ user, logout }) => {
                 ...conv,
                 messages,
                 latestMessageText: messages[messages.length - 1].text,
-                unreadMessages: 0,
               };
             }
             return conv;
@@ -224,10 +223,18 @@ const Home = ({ user, logout }) => {
       // reading conv and getting updated messages
       const { data } = await axios.patch(`/api/conversations/read/${convId}`);
       // updating messages in our conv
-      updateConversationMessages({
-        conversationId: convId,
-        messages: data.messages,
-        otherUserId: user.id,
+      setConversations((prev) => {
+        return prev.map((conv) => {
+          if (conv.id === convId) {
+            return {
+              ...conv,
+              messages: data.messages,
+              latestMessageText: data.messages[data.messages.length - 1].text,
+              unreadMessages: 0,
+            };
+          }
+          return conv;
+        });
       });
       // updating messages in other user conv
       socket.emit('read-conv-messages', {
@@ -236,7 +243,7 @@ const Home = ({ user, logout }) => {
         otherUserId: otherUserId,
       });
     },
-    [socket, updateConversationMessages, user.id]
+    [socket]
   );
 
   const retreiveNewMessage = useCallback(
