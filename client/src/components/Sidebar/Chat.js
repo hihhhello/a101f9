@@ -58,11 +58,7 @@ const Chat = ({
     }
   };
 
-  const unreadMessages = conversation.messages.filter(
-    (msg) => msg.senderId !== currentUserId && !msg.isRead
-  );
-
-  const hasUnreadMessages = Boolean(unreadMessages.length);
+  const hasUnreadMessages = Boolean(conversation.unreadMessages);
 
   return (
     <Box onClick={() => handleClick(conversation)} className={classes.root}>
@@ -81,7 +77,7 @@ const Chat = ({
       {hasUnreadMessages && (
         <Box className={classes.rightContainer}>
           <Typography className={classes.unreadCount}>
-            {unreadMessages.length}
+            {conversation.unreadMessages}
           </Typography>
         </Box>
       )}

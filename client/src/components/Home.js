@@ -89,6 +89,7 @@ const Home = ({ user, logout }) => {
               messages: [...convo.messages, message],
               latestMessageText: message.text,
               id: message.conversationId,
+              unreadMessages: recipientId === user.id ? 1 : 0,
             };
           }
 
@@ -112,48 +113,56 @@ const Home = ({ user, logout }) => {
         conversationId: message.conversationId,
       }));
     },
-    [setConversations]
+    [user.id]
   );
 
-  const addMessageToConversation = useCallback((data) => {
-    // if sender isn't null, that means the message needs to be put in a brand new convo
-    const { message, sender = null } = data;
-    if (sender !== null) {
-      const newConvo = {
-        id: message.conversationId,
-        otherUser: sender,
-        messages: [message],
-      };
-      newConvo.latestMessageText = message.text;
-      setConversations((prev) => [newConvo, ...prev]);
-      return;
-    }
-
-    setConversations((prev) => {
-      let convInd = null;
-      const newState = prev.map((convo, i) => {
-        if (convo.id === message.conversationId) {
-          convInd = i;
-          return {
-            ...convo,
-            messages: [...convo.messages, message],
-            latestMessageText: message.text,
-          };
-        }
-        return convo;
-      });
-
-      if (convInd === null || convInd === 0) {
-        return newState;
+  const addMessageToConversation = useCallback(
+    (data) => {
+      // if sender isn't null, that means the message needs to be put in a brand new convo
+      const { message, sender = null } = data;
+      if (sender !== null) {
+        const newConvo = {
+          id: message.conversationId,
+          otherUser: sender,
+          messages: [message],
+          unreadMessages: message.senderId === user.id ? 0 : 1,
+        };
+        newConvo.latestMessageText = message.text;
+        setConversations((prev) => [newConvo, ...prev]);
+        return;
       }
-      // Moving conv to top with new message
-      return [
-        newState[convInd],
-        ...newState.slice(0, convInd),
-        ...newState.slice(convInd + 1),
-      ];
-    });
-  }, []);
+
+      setConversations((prev) => {
+        let convInd = null;
+        const newState = prev.map((convo, i) => {
+          if (convo.id === message.conversationId) {
+            convInd = i;
+            return {
+              ...convo,
+              messages: [...convo.messages, message],
+              latestMessageText: message.text,
+              unreadMessages:
+                message.senderId === user.id
+                  ? 0
+                  : (convo.unreadMessages || 0) + 1,
+            };
+          }
+          return convo;
+        });
+
+        if (convInd === null || convInd === 0) {
+          return newState;
+        }
+        // Moving conv to top with new message
+        return [
+          newState[convInd],
+          ...newState.slice(0, convInd),
+          ...newState.slice(convInd + 1),
+        ];
+      });
+    },
+    [user.id]
+  );
 
   const setActiveChat = (username) => {
     setActiveConversation(username);
@@ -199,6 +208,7 @@ const Home = ({ user, logout }) => {
                 ...conv,
                 messages,
                 latestMessageText: messages[messages.length - 1].text,
+                unreadMessages: 0,
               };
             }
             return conv;
