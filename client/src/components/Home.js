@@ -84,13 +84,12 @@ const Home = ({ user, logout }) => {
         const newState = prev.map((convo, i) => {
           if (convo.otherUser.id === recipientId) {
             convInd = i;
-            return {
-              ...convo,
-              messages: [...convo.messages, message],
-              latestMessageText: message.text,
-              id: message.conversationId,
-              unreadMessages: recipientId === user.id ? 1 : 0,
-            };
+            const convoCopy = { ...convo };
+            convoCopy.messages = [...convoCopy.messages, message];
+            convoCopy.unreadMessages = recipientId === user.id ? 1 : 0;
+            convoCopy.latestMessageText = message.text;
+            convoCopy.id = message.conversationId;
+            return convoCopy;
           }
 
           return convo;
@@ -137,16 +136,16 @@ const Home = ({ user, logout }) => {
         const newState = prev.map((convo, i) => {
           if (convo.id === message.conversationId) {
             convInd = i;
-            return {
-              ...convo,
-              messages: [...convo.messages, message],
-              latestMessageText: message.text,
-              unreadMessages:
-                message.senderId === user.id
-                  ? 0
-                  : (convo.unreadMessages || 0) + 1,
-            };
+            const convoCopy = { ...convo };
+            convoCopy.messages = [...convoCopy.messages, message];
+            convoCopy.unreadMessages =
+              message.senderId === user.id
+                ? 0
+                : (convo.unreadMessages || 0) + 1;
+            convoCopy.latestMessageText = message.text;
+            return convoCopy;
           }
+
           return convo;
         });
 
@@ -202,15 +201,15 @@ const Home = ({ user, logout }) => {
 
       if (user.id === otherUserId) {
         setConversations((prev) => {
-          return prev.map((conv) => {
-            if (conv.id === conversationId) {
-              return {
-                ...conv,
-                messages,
-                latestMessageText: messages[messages.length - 1].text,
-              };
+          return prev.map((convo) => {
+            if (convo.id === conversationId) {
+              const convoCopy = { ...convo };
+              convoCopy.messages = messages;
+              convoCopy.latestMessageText = messages[messages.length - 1].text;
+              return convoCopy;
             }
-            return conv;
+
+            return convo;
           });
         });
       }
@@ -226,13 +225,14 @@ const Home = ({ user, logout }) => {
       setConversations((prev) => {
         return prev.map((conv) => {
           if (conv.id === convId) {
-            return {
-              ...conv,
-              messages: data.messages,
-              latestMessageText: data.messages[data.messages.length - 1].text,
-              unreadMessages: 0,
-            };
+            const convoCopy = { ...conv };
+            convoCopy.messages = data.messages;
+            convoCopy.latestMessageText =
+              data.messages[data.messages.length - 1].text;
+            convoCopy.unreadMessages = 0;
+            return convoCopy;
           }
+
           return conv;
         });
       });
