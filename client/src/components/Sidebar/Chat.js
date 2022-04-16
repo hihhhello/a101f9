@@ -1,7 +1,8 @@
 import React from 'react';
-import { Box, Typography } from '@material-ui/core';
+import { Box } from '@material-ui/core';
 import { BadgeAvatar, ChatContent } from '../Sidebar';
 import { makeStyles } from '@material-ui/core/styles';
+import Badge from '@material-ui/core/Badge';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -20,21 +21,6 @@ const useStyles = makeStyles((theme) => ({
   leftContainer: {
     display: 'flex',
     alignItems: 'center',
-  },
-  rightContainer: {
-    backgroundColor: '#3F92FF',
-    borderRadius: 100,
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: '2px 7px',
-    minWidth: 15,
-    minHeightt: 15,
-  },
-  unreadCount: {
-    fontWeight: 'bold',
-    fontSize: 12,
-    color: '#fff',
   },
 }));
 
@@ -75,11 +61,7 @@ const Chat = ({
         />
       </Box>
       {hasUnreadMessages && (
-        <Box className={classes.rightContainer}>
-          <Typography className={classes.unreadCount}>
-            {conversation.unreadMessages}
-          </Typography>
-        </Box>
+        <Badge badgeContent={conversation.unreadMessages} color="primary" />
       )}
     </Box>
   );
