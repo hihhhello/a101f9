@@ -62,6 +62,8 @@ const Chat = ({
     (msg) => msg.senderId !== currentUserId && !msg.isRead
   );
 
+  const hasUnreadMessages = Boolean(unreadMessages.length);
+
   return (
     <Box onClick={() => handleClick(conversation)} className={classes.root}>
       <Box className={classes.leftContainer}>
@@ -71,9 +73,12 @@ const Chat = ({
           online={otherUser.online}
           sidebar={true}
         />
-        <ChatContent conversation={conversation} />
+        <ChatContent
+          conversation={conversation}
+          hasUnreadMessages={hasUnreadMessages}
+        />
       </Box>
-      {Boolean(unreadMessages.length) && (
+      {hasUnreadMessages && (
         <Box className={classes.rightContainer}>
           <Typography className={classes.unreadCount}>
             {unreadMessages.length}
