@@ -5,6 +5,10 @@ const Conversation = db.define("conversation", {
     type: Sequelize.STRING,
     allowNull: false,
   },
+  roomUid: {
+    type: Sequelize.STRING,
+    defaultValue: Sequelize.UUIDV4
+  }
 });
 
 module.exports = Conversation;
