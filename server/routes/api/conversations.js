@@ -103,6 +103,23 @@ router.patch("/read/:convId", async (req, res, next) => {
     }
     const userId = req.user.id;
     const { convId } = req.params;
+    const conversation = await Conversation.findOne({
+      where: {
+        id: convId
+      }
+    });
+
+    if (!conversation) {
+      res.statusCode = 404;
+      res.statusMessage = "Conversation not found";
+      return res.send();
+    }
+
+    if (conversation.userId1 !== userId && conversation.userId2 !== userId) {
+      res.statusCode = 403;
+      res.statusMessage = "Invalid user conversation";
+      return res.send();
+    }
 
     await Message.update(
       {
