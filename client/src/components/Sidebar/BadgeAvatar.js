@@ -1,7 +1,7 @@
-import React from "react";
-import { Box, Badge, Avatar } from "@material-ui/core";
+import React from 'react';
+import { Box, Badge, Avatar } from '@material-ui/core';
 
-import { makeStyles } from "@material-ui/core/styles";
+import { makeStyles } from '@material-ui/core/styles';
 
 const useStyles = makeStyles(() => ({
   profilePic: {
@@ -11,15 +11,12 @@ const useStyles = makeStyles(() => ({
   badge: {
     height: 13,
     width: 13,
-    borderRadius: "50%",
-    border: "2px solid white",
-    backgroundColor: "#D0DAE9",
+    borderRadius: '50%',
+    border: '2px solid white',
+    backgroundColor: '#D0DAE9',
   },
   online: {
-    backgroundColor: "#1CED84",
-  },
-  sidebar: {
-    marginLeft: 17,
+    backgroundColor: '#1CED84',
   },
 }));
 
@@ -27,11 +24,11 @@ const UserAvatar = ({ sidebar, username, photoUrl, online }) => {
   const classes = useStyles();
 
   return (
-    <Box className={sidebar ? classes.sidebar : ""}>
+    <Box className={sidebar ? classes.sidebar : ''}>
       <Badge
         classes={{ badge: `${classes.badge} ${online && classes.online}` }}
         variant="dot"
-        anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
+        anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
         overlap="circular"
       >
         <Avatar alt={username} src={photoUrl} className={classes.profilePic} />

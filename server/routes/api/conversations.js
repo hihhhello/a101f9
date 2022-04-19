@@ -67,6 +67,18 @@ router.get("/", async (req, res, next) => {
         convoJSON.otherUser.online = false;
       }
 
+      const unreadMessages = await Message.count({
+        where: {
+          conversationId: convo.id,
+          isRead: false,
+          senderId: {
+            [Op.not]: userId
+          }
+        }
+      });
+
+      convoJSON.unreadMessages = unreadMessages;
+
       // set properties for notification count and latest message preview
       convoJSON.latestMessageText =
         convoJSON.messages[convoJSON.messages.length - 1].text;
@@ -74,6 +86,64 @@ router.get("/", async (req, res, next) => {
     }
 
     res.json(conversations);
+  } catch (error) {
+    next(error);
+  }
+});
+
+/**
+ * Reads conversation's messages
+ */
+// userId - by whom messages are read, convId - in which conv read messages
+// setting flag to true where senderId != userId to don't read own messages
+router.patch("/read/:convId", async (req, res, next) => {
+  try {
+    if (!req.user) {
+      return res.sendStatus(401);
+    }
+    const userId = req.user.id;
+    const { convId } = req.params;
+    const conversation = await Conversation.findOne({
+      where: {
+        id: convId
+      }
+    });
+
+    if (!conversation) {
+      res.statusCode = 404;
+      res.statusMessage = "Conversation not found";
+      return res.send();
+    }
+
+    if (conversation.userId1 !== userId && conversation.userId2 !== userId) {
+      res.statusCode = 403;
+      res.statusMessage = "Invalid user conversation";
+      return res.send();
+    }
+
+    await Message.update(
+      {
+        isRead: true
+      },
+      {
+        where: {
+          isRead: false,
+          conversationId: convId,
+          [Op.not]: {
+            senderId: userId
+          }
+        }
+      }
+    );
+
+    const messages = await Message.findAll({
+      where: {
+        conversationId: convId
+      },
+      order: [["createdAt", "ASC"]]
+    });
+
+    res.json({ messages, convId });
   } catch (error) {
     next(error);
   }

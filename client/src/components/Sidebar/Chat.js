@@ -2,6 +2,7 @@ import React from 'react';
 import { Box } from '@material-ui/core';
 import { BadgeAvatar, ChatContent } from '../Sidebar';
 import { makeStyles } from '@material-ui/core/styles';
+import Badge from '@material-ui/core/Badge';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -11,29 +12,55 @@ const useStyles = makeStyles((theme) => ({
     marginBottom: 10,
     display: 'flex',
     alignItems: 'center',
+    justifyContent: 'space-between',
     '&:hover': {
       cursor: 'grab',
     },
+    paddingInline: 17,
+  },
+  leftContainer: {
+    display: 'flex',
+    alignItems: 'center',
   },
 }));
 
-const Chat = ({ conversation, setActiveChat }) => {
+const Chat = ({
+  conversation,
+  setActiveChat,
+  currentUserId,
+  readConversationMessages,
+}) => {
   const classes = useStyles();
   const { otherUser } = conversation;
 
   const handleClick = async (conversation) => {
-    await setActiveChat(conversation.otherUser.username);
+    await setActiveChat({
+      username: conversation.otherUser.username,
+      conversationId: conversation.id,
+    });
+
+    if (conversation.id) {
+      readConversationMessages(conversation.id, conversation.otherUser.id);
+    }
   };
+
+  const hasUnreadMessages = Boolean(conversation.unreadMessages);
 
   return (
     <Box onClick={() => handleClick(conversation)} className={classes.root}>
-      <BadgeAvatar
-        photoUrl={otherUser.photoUrl}
-        username={otherUser.username}
-        online={otherUser.online}
-        sidebar={true}
-      />
-      <ChatContent conversation={conversation} />
+      <Box className={classes.leftContainer}>
+        <BadgeAvatar
+          photoUrl={otherUser.photoUrl}
+          username={otherUser.username}
+          online={otherUser.online}
+          sidebar={true}
+        />
+        <ChatContent
+          conversation={conversation}
+          hasUnreadMessages={hasUnreadMessages}
+        />
+      </Box>
+      <Badge badgeContent={conversation.unreadMessages} color="primary" />
     </Box>
   );
 };
