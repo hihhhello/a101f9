@@ -60,9 +60,7 @@ const Chat = ({
           hasUnreadMessages={hasUnreadMessages}
         />
       </Box>
-      {hasUnreadMessages && (
-        <Badge badgeContent={conversation.unreadMessages} color="primary" />
-      )}
+      <Badge badgeContent={conversation.unreadMessages} color="primary" />
     </Box>
   );
 };
